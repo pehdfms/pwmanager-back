@@ -32,6 +32,7 @@ public class WebSecurityConfigurer extends WebSecurityConfigurerAdapter {
 
     private static final String[] AUTH_WHITELIST = {
             "/api/login/**",
+            "/api/users/register/**"
     };
     @Autowired
     private final AuthenticationService authenticationService;
@@ -45,6 +46,10 @@ public class WebSecurityConfigurer extends WebSecurityConfigurerAdapter {
         return new DelegatingPasswordEncoder(defaultEncoding, encoders);
     }
 
+    @Bean
+    public AuthorizationFilter authorizationTokenFilterBean() throws Exception {
+        return new AuthorizationFilter();
+    }
 
     @Bean
     @Override
@@ -58,12 +63,13 @@ public class WebSecurityConfigurer extends WebSecurityConfigurerAdapter {
         authenticationFilter.setFilterProcessesUrl("/api/login");
 
         http.csrf().disable();
+        http.cors();
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.authorizeRequests().antMatchers(AUTH_WHITELIST).permitAll();
         http.authorizeRequests().antMatchers(GET, "/api/**").hasAnyAuthority("ROLE_ADMIN");
         http.authorizeRequests().anyRequest().authenticated();
         http.addFilter(authenticationFilter);
-        http.addFilterBefore(new AuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(authorizationTokenFilterBean(), UsernamePasswordAuthenticationFilter.class);
     }
 
     @Override

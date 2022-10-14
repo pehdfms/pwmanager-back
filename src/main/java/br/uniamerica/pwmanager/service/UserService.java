@@ -23,12 +23,12 @@ public class UserService {
         return this.userRepository.findAll(pageable);
     }
 
-    public void insert(User user) {
-        this.saveTransactional(user);
+    public Optional<User> insert(User user) {
+        return Optional.ofNullable(this.saveTransactional(user));
     }
 
     @Transactional
-    public void saveTransactional(User user) {
-        this.userRepository.save(user);
+    protected User saveTransactional(User user) {
+        return this.userRepository.save(user);
     }
 }
